@@ -1,0 +1,241 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robotic_arm">
+
+  <!-- Fixed base for simulation spawn -->
+  <link name="world"/>
+  <joint name="world_fixed" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="base_link">
+    <visual>
+      <geometry><cylinder length="0.1" radius="0.15"/></geometry>
+      <material name="grey"><color rgba="0.5 0.5 0.5 1"/></material>
+    </visual>
+    <collision>
+      <geometry><cylinder length="0.1" radius="0.15"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="5.0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+  </link>
+
+  <link name="shoulder_pitch_link">
+    <visual>
+      <origin xyz="0 0 0.1" rpy="0 0 0"/>
+      <geometry><box size="0.1 0.1 0.2"/></geometry>
+      <material name="dark_grey"><color rgba="0.3 0.3 0.3 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.1" rpy="0 0 0"/>
+      <geometry><box size="0.1 0.1 0.2"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="2.0"/>
+      <origin xyz="0 0 0.1" rpy="0 0 0"/>
+      <inertia ixx="0.005" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.005"/>
+    </inertial>
+  </link>
+
+  <link name="upper_arm_link">
+    <visual>
+      <origin xyz="0 0 0.15" rpy="0 0 0"/>
+      <geometry><cylinder length="0.3" radius="0.04"/></geometry>
+      <material name="orange"><color rgba="0.8 0.4 0.1 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.15" rpy="0 0 0"/>
+      <geometry><cylinder length="0.3" radius="0.04"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="3.0"/>
+      <origin xyz="0 0 0.15" rpy="0 0 0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+  </link>
+
+  <link name="forearm_link">
+    <visual>
+      <origin xyz="0 0 0.125" rpy="0 0 0"/>
+      <geometry><cylinder length="0.25" radius="0.035"/></geometry>
+      <material name="orange"><color rgba="0.8 0.4 0.1 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.125" rpy="0 0 0"/>
+      <geometry><cylinder length="0.25" radius="0.035"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="2.0"/>
+      <origin xyz="0 0 0.125" rpy="0 0 0"/>
+      <inertia ixx="0.008" ixy="0" ixz="0" iyy="0.008" iyz="0" izz="0.008"/>
+    </inertial>
+  </link>
+
+  <link name="wrist_link">
+    <visual>
+      <origin xyz="0 0 0.05" rpy="0 0 0"/>
+      <geometry><cylinder length="0.1" radius="0.03"/></geometry>
+      <material name="dark_grey"><color rgba="0.3 0.3 0.3 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.05" rpy="0 0 0"/>
+      <geometry><cylinder length="0.1" radius="0.03"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="0.5"/>
+      <origin xyz="0 0 0.05" rpy="0 0 0"/>
+      <inertia ixx="0.002" ixy="0" ixz="0" iyy="0.002" iyz="0" izz="0.002"/>
+    </inertial>
+  </link>
+
+  <link name="gripper_base_link">
+    <visual>
+      <geometry><box size="0.08 0.08 0.1"/></geometry>
+      <material name="grey"><color rgba="0.5 0.5 0.5 1"/></material>
+    </visual>
+    <collision>
+      <geometry><box size="0.08 0.08 0.1"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="0.5"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+  </link>
+
+  <link name="gripper_left_link">
+    <visual>
+      <origin xyz="0 0.02 0.04" rpy="0 0 0"/>
+      <geometry><box size="0.02 0.04 0.08"/></geometry>
+      <material name="black"><color rgba="0.1 0.1 0.1 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0.02 0.04" rpy="0 0 0"/>
+      <geometry><box size="0.02 0.04 0.08"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0.02 0.04" rpy="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <link name="gripper_right_link">
+    <visual>
+      <origin xyz="0 -0.02 0.04" rpy="0 0 0"/>
+      <geometry><box size="0.02 0.04 0.08"/></geometry>
+      <material name="black"><color rgba="0.1 0.1 0.1 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 -0.02 0.04" rpy="0 0 0"/>
+      <geometry><box size="0.02 0.04 0.08"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 -0.02 0.04" rpy="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <!-- Revolute base (position-controllable in sim) -->
+  <joint name="base_rotator" type="revolute">
+    <parent link="base_link"/>
+    <child link="shoulder_pitch_link"/>
+    <origin xyz="0 0 0.1" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14159" upper="3.14159" effort="50" velocity="3.14"/>
+    <dynamics damping="0.7" friction="0.5"/>
+  </joint>
+
+  <joint name="shoulder_pitch" type="revolute">
+    <parent link="shoulder_pitch_link"/>
+    <child link="upper_arm_link"/>
+    <origin xyz="0 0 0.1" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.57" upper="1.57" effort="50" velocity="3.14"/>
+    <dynamics damping="0.7" friction="0.5"/>
+  </joint>
+
+  <joint name="elbow_pitch" type="revolute">
+    <parent link="upper_arm_link"/>
+    <child link="forearm_link"/>
+    <origin xyz="0 0 0.3" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.35" upper="2.35" effort="30" velocity="3.14"/>
+    <dynamics damping="0.7" friction="0.5"/>
+  </joint>
+
+  <joint name="wrist_pitch" type="revolute">
+    <parent link="forearm_link"/>
+    <child link="wrist_link"/>
+    <origin xyz="0 0 0.25" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-3.14" upper="3.14" effort="10" velocity="6.28"/>
+    <dynamics damping="0.5" friction="0.3"/>
+  </joint>
+
+  <joint name="wrist_roll" type="revolute">
+    <parent link="wrist_link"/>
+    <child link="gripper_base_link"/>
+    <origin xyz="0 0 0.1" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-3.14" upper="3.14" effort="5" velocity="6.28"/>
+    <dynamics damping="0.5" friction="0.3"/>
+  </joint>
+
+  <joint name="gripper_joint" type="prismatic">
+    <parent link="gripper_base_link"/>
+    <child link="gripper_left_link"/>
+    <origin xyz="0 0.04 0.05" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="0.04" effort="20" velocity="0.5"/>
+    <dynamics damping="0.9" friction="0.5"/>
+  </joint>
+
+  <joint name="gripper_joint_right" type="prismatic">
+    <parent link="gripper_base_link"/>
+    <child link="gripper_right_link"/>
+    <origin xyz="0 -0.04 0.05" rpy="0 0 0"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="0" upper="0.04" effort="20" velocity="0.5"/>
+    <dynamics damping="0.9" friction="0.5"/>
+  </joint>
+
+  <!-- Gazebo Harmonic: joint state + per-joint position control (no ros2_control apt required) -->
+  <gazebo>
+    <plugin filename="gz-sim-joint-state-publisher-system"
+            name="gz::sim::systems::JointStatePublisher"/>
+  </gazebo>
+
+  <xacro:macro name="joint_position_controller" params="joint_name">
+    <gazebo>
+      <plugin filename="gz-sim-joint-position-controller-system"
+              name="gz::sim::systems::JointPositionController">
+        <joint_name>${joint_name}</joint_name>
+        <p_gain>4.0</p_gain>
+        <i_gain>0.1</i_gain>
+        <d_gain>0.5</d_gain>
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:joint_position_controller joint_name="base_rotator"/>
+  <xacro:joint_position_controller joint_name="shoulder_pitch"/>
+  <xacro:joint_position_controller joint_name="elbow_pitch"/>
+  <xacro:joint_position_controller joint_name="wrist_pitch"/>
+  <xacro:joint_position_controller joint_name="wrist_roll"/>
+  <xacro:joint_position_controller joint_name="gripper_joint"/>
+  <xacro:joint_position_controller joint_name="gripper_joint_right"/>
+
+  <gazebo reference="base_link"><material>Gazebo/DarkGrey</material></gazebo>
+    <gazebo reference="shoulder_pitch_link"><material>Gazebo/DarkGrey</material></gazebo>
+    <gazebo reference="upper_arm_link"><material>Gazebo/Orange</material></gazebo>
+    <gazebo reference="forearm_link"><material>Gazebo/Orange</material></gazebo>
+    <gazebo reference="wrist_link"><material>Gazebo/DarkGrey</material></gazebo>
+    <gazebo reference="gripper_base_link"><material>Gazebo/Grey</material></gazebo>
+    <gazebo reference="gripper_left_link"><material>Gazebo/Black</material></gazebo>
+    <gazebo reference="gripper_right_link"><material>Gazebo/Black</material></gazebo>
+
+</robot>
