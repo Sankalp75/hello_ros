@@ -10,26 +10,28 @@ if [[ "${ROBOTIC_ARM_DEBUG:-}" =~ ^(1|true|yes)$ ]]; then
   _DEBUG_ENABLED=true
 fi
 
-LOG="$WS/.cursor/debug-2f27da.log"
-if $_DEBUG_ENABLED; then
+LOG="${ROBOTIC_ARM_DEBUG_LOG:-}"
+if $_DEBUG_ENABLED && [[ -n "$LOG" ]]; then
   mkdir -p "$(dirname "$LOG")"
 fi
 
 log_json() {
-  if ! $_DEBUG_ENABLED; then return; fi
+  if ! $_DEBUG_ENABLED || [[ -z "$LOG" ]]; then return; fi
   local hyp="$1" loc="$2" msg="$3"
-  printf '{"sessionId":"2f27da","runId":"verify","hypothesisId":"%s","location":"%s","message":"%s","timestamp":%s}\n' \
+  printf '{"runId":"verify","hypothesisId":"%s","location":"%s","message":"%s","timestamp":%s}\n' \
     "$hyp" "$loc" "$msg" "$(date +%s000)" >> "$LOG"
 }
 
-BUILD_LOG=$(mktemp /tmp/robotic_arm_build.XXXXXX.log) || {
+BUILD_LOG=$(mktemp -t robotic_arm_build.XXXXXXXXXX.log) || {
   echo "ERROR: failed to create temp file"
   exit 1
 }
-cleanup() { rm -f "$BUILD_LOG" /tmp/robotic_arm_processed.urdf; }
+PROCESSED_URDF=""
+cleanup() { rm -f "$BUILD_LOG" "${PROCESSED_URDF:-}"; }
 trap cleanup EXIT
 
-source /opt/ros/jazzy/setup.bash
+ROS_DISTRO="${ROS_DISTRO:-jazzy}"
+source "/opt/ros/$ROS_DISTRO/setup.bash"
 cd "$WS"
 
 log_json "A" "verify:build" "starting colcon build"
@@ -45,7 +47,7 @@ else
   exit 1
 fi
 
-PROCESSED_URDF=$(mktemp /tmp/robotic_arm_processed.XXXXXX.urdf) || {
+PROCESSED_URDF=$(mktemp -t robotic_arm_processed.XXXXXXXXXX.urdf) || {
   echo "ERROR: failed to create temp file"
   exit 1
 }

@@ -10,15 +10,16 @@ if [[ "${ROBOTIC_ARM_DEBUG:-}" =~ ^(1|true|yes)$ ]]; then
   _DEBUG_ENABLED=true
 fi
 
-LOG="$WS/.cursor/debug-2f27da.log"
+LOG="${ROBOTIC_ARM_DEBUG_LOG:-}"
 
-source /opt/ros/jazzy/setup.bash
+ROS_DISTRO="${ROS_DISTRO:-jazzy}"
+source "/opt/ros/$ROS_DISTRO/setup.bash"
 cd "$WS"
 rm -rf build install log
 
-if $_DEBUG_ENABLED; then
-  mkdir -p "$WS/.cursor"
-  echo '{"sessionId":"2f27da","runId":"build","hypothesisId":"A","location":"build.sh","message":"colcon build start","timestamp":'$(date +%s000)'}' >> "$LOG"
+if $_DEBUG_ENABLED && [[ -n "$LOG" ]]; then
+  mkdir -p "$(dirname "$LOG")"
+  echo '{"runId":"build","location":"build.sh","message":"colcon build start","timestamp":'$(date +%s000)'}' >> "$LOG"
 fi
 
 colcon build
@@ -28,22 +29,22 @@ XACRO="install/robotic_arm_control/share/robotic_arm_control/urdf/robotic_arm.ur
 LAUNCH="install/robotic_arm_control/share/robotic_arm_control/launch/simulation_launch.py"
 
 if [[ ! -f "$XACRO" ]]; then
-  if $_DEBUG_ENABLED; then
-    echo '{"sessionId":"2f27da","runId":"build","hypothesisId":"A","location":"build.sh","message":"FAIL xacro not installed","timestamp":'$(date +%s000)'}' >> "$LOG"
+  if $_DEBUG_ENABLED && [[ -n "$LOG" ]]; then
+    echo '{"runId":"build","location":"build.sh","message":"FAIL xacro not installed","timestamp":'$(date +%s000)'}' >> "$LOG"
   fi
   echo "ERROR: $XACRO missing after build"
   exit 1
 fi
 
 if ! grep -q 'ros_gz_bridge' "$LAUNCH"; then
-  if $_DEBUG_ENABLED; then
-    echo '{"sessionId":"2f27da","runId":"build","hypothesisId":"A","location":"build.sh","message":"FAIL stale launch in install","timestamp":'$(date +%s000)'}' >> "$LOG"
+  if $_DEBUG_ENABLED && [[ -n "$LOG" ]]; then
+    echo '{"runId":"build","location":"build.sh","message":"FAIL stale launch in install","timestamp":'$(date +%s000)'}' >> "$LOG"
   fi
   echo "ERROR: install/launch is stale — expected ros_gz_bridge in simulation_launch.py"
   exit 1
 fi
 
-if $_DEBUG_ENABLED; then
-  echo '{"sessionId":"2f27da","runId":"build","hypothesisId":"A","location":"build.sh","message":"build OK xacro and launch installed","timestamp":'$(date +%s000)'}' >> "$LOG"
+if $_DEBUG_ENABLED && [[ -n "$LOG" ]]; then
+  echo '{"runId":"build","location":"build.sh","message":"build OK xacro and launch installed","timestamp":'$(date +%s000)'}' >> "$LOG"
 fi
 echo "Build OK. Run: ros2 launch robotic_arm_control simulation_launch.py"

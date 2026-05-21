@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 #include <sstream>
@@ -97,6 +98,7 @@ private:
   bool is_moving_;
   rclcpp::Time last_command_time_;
 
+  mutable std::mutex mutex_;
   int execution_step_;
   int execution_wait_ticks_;
   ArmState pending_completion_state_;

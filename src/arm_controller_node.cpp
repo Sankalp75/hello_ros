@@ -41,12 +41,15 @@ ArmControllerNode::ArmControllerNode()
     "/arm_controller/commands", 10,
     std::bind(&ArmControllerNode::command_callback, this, std::placeholders::_1));
 
+  last_command_time_ = this->now();
+
   status_pub_ = this->create_publisher<std_msgs::msg::String>("/arm_controller/status", 10);
 
   home_service_ = this->create_service<std_srvs::srv::Empty>(
     "/arm_controller/home",
     [this](const std::shared_ptr<std_srvs::srv::Empty::Request>,
            std::shared_ptr<std_srvs::srv::Empty::Response>) {
+      std::lock_guard<std::mutex> lock(mutex_);
       if (execution_step_ < 0) {
         start_async_execution(JointPositions(), GripperState::OPEN, ArmState::IDLE, false);
       }
@@ -56,6 +59,7 @@ ArmControllerNode::ArmControllerNode()
     "/arm_controller/stop",
     [this](const std::shared_ptr<std_srvs::srv::Empty::Request>,
            std::shared_ptr<std_srvs::srv::Empty::Response>) {
+      std::lock_guard<std::mutex> lock(mutex_);
       execution_timer_->cancel();
       execution_step_ = -1;
       is_moving_ = false;
@@ -63,6 +67,7 @@ ArmControllerNode::ArmControllerNode()
     });
 
   status_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), [this]() {
+    std::lock_guard<std::mutex> lock(mutex_);
     auto status_msg = std_msgs::msg::String();
     switch (current_state_)
     {
@@ -97,8 +102,9 @@ void ArmControllerNode::publish_joint_command(const std::string& joint_name, dou
 void ArmControllerNode::joint_state_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
 {
   auto get_pos = [&](const char * name, double & out) {
-    for (size_t i = 0; i < msg->name.size(); ++i) {
-      if (msg->name[i] == name && i < msg->position.size()) {
+    size_t n = std::min(msg->name.size(), msg->position.size());
+    for (size_t i = 0; i < n; ++i) {
+      if (msg->name[i] == name) {
         out = msg->position[i];
         return;
       }
@@ -136,8 +142,10 @@ std::vector<double> ArmControllerNode::parse_position(const std::string& command
 
   iss >> word;
 
-  while (iss >> word && pos.size() < 3)
+  int tokens = 0;
+  while (iss >> word && pos.size() < 3 && tokens < 100)
   {
+    tokens++;
     try {
       size_t idx;
       double val = std::stod(word, &idx);
@@ -195,6 +203,7 @@ void ArmControllerNode::start_async_execution(const JointPositions& target,
 
 void ArmControllerNode::execution_callback()
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   const int ARM_WAIT_TICKS = 40;
   const int GRIPPER_WAIT_TICKS = 10;
 
@@ -270,7 +279,16 @@ void ArmControllerNode::execution_callback()
 
 void ArmControllerNode::command_callback(const std_msgs::msg::String::SharedPtr msg)
 {
+  std::lock_guard<std::mutex> lock(mutex_);
+
   RCLCPP_INFO(this->get_logger(), "Command received: %s", msg->data.c_str());
+
+  rclcpp::Time now = this->now();
+  if ((now - last_command_time_).seconds() < 0.1) {
+    RCLCPP_WARN(this->get_logger(), "Rate limit exceeded, rejecting command");
+    return;
+  }
+  last_command_time_ = now;
 
   if (execution_step_ >= 0) {
     RCLCPP_WARN(this->get_logger(), "Busy executing previous command, rejecting");

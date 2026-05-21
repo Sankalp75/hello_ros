@@ -1,3 +1,9 @@
+# NOTE: For production deployment, enable SROS2 security:
+#   1. Generate keystore: ros2 security generate_keystore <path>
+#   2. Create enclaves for each node
+#   3. Set env: ROS_SECURITY_ENABLE=true ROS_SECURITY_STRATEGY=Enforce
+#   4. See: https://docs.ros.org/en/jazzy/Tutorials/Advanced/Security.html
+
 import json
 import os
 import time
@@ -11,9 +17,7 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 _DEBUG_ENABLED = os.environ.get('ROBOTIC_ARM_DEBUG', '').lower() in ('1', 'true', 'yes')
-_DEBUG_LOG = os.path.join(
-    os.environ.get('ROBOTIC_ARM_WS', ''),
-    '.cursor', 'debug-2f27da.log') if _DEBUG_ENABLED else None
+_DEBUG_LOG = os.environ.get('ROBOTIC_ARM_DEBUG_LOG') if _DEBUG_ENABLED else None
 
 WORLD_NAME = 'robotic_arm_world'
 MODEL_NAME = 'robotic_arm'
@@ -32,7 +36,6 @@ def _dbg(hypothesis_id, location, message, data=None, run_id='post-fix'):
         os.makedirs(os.path.dirname(_DEBUG_LOG), exist_ok=True)
         with open(_DEBUG_LOG, 'a', encoding='utf-8') as f:
             f.write(json.dumps({
-                'sessionId': '2f27da',
                 'runId': run_id,
                 'hypothesisId': hypothesis_id,
                 'location': location,
