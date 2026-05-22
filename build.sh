@@ -13,9 +13,10 @@ fi
 LOG="${ROBOTIC_ARM_DEBUG_LOG:-}"
 
 ROS_DISTRO="${ROS_DISTRO:-jazzy}"
-source "/opt/ros/$ROS_DISTRO/setup.bash"
+source "/opt/ros/$ROS_DISTRO/setup.zsh" #Zsh shell is always recommended.
 cd "$WS"
 rm -rf build install log
+colcon build
 
 if $_DEBUG_ENABLED && [[ -n "$LOG" ]]; then
   mkdir -p "$(dirname "$LOG")"
